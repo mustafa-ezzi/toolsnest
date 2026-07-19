@@ -20,6 +20,19 @@ ALLOWED_HOSTS = [
     for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
     if host.strip()
 ]
+# Railway private/public hostnames
+if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("RAILWAY_STATIC_URL"):
+    for host in (
+        ".up.railway.app",
+        ".railway.app",
+        "healthcheck.railway.app",
+    ):
+        if host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(host)
+# Allow all when explicitly set (useful while debugging deploy)
+if os.getenv("ALLOW_ALL_HOSTS", "").lower() in ("1", "true", "yes"):
+    ALLOWED_HOSTS = ["*"]
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -72,12 +85,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+# Railway Postgres needs SSL (public proxy and most managed links)
+_db_ssl_default = "True" if "railway" in DATABASE_URL.lower() else "False"
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=600,
-            ssl_require=os.getenv("DB_SSL_REQUIRE", "False").lower()
+            ssl_require=os.getenv("DB_SSL_REQUIRE", _db_ssl_default).lower()
             in ("1", "true", "yes"),
         )
     }

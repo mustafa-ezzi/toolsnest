@@ -1,0 +1,11 @@
+# Tell Nixpacks this is a Python app in the backend folder
+providers = ["python"]
+
+[phases.setup]
+nixPkgs = ["python312", "postgresql"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[start]
+cmd = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 120 --workers 2"
