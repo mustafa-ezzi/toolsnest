@@ -1,0 +1,21 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.sqlite3
+.env
+.venv/
+venv/
+backend/media/
+backend/staticfiles/
+backend/db.sqlite3
+
+# Node
+node_modules/
+frontend/dist/
+*.log
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
