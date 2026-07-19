@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     "orders",
     "promotions",
 ]
-
+ 
 MIDDLEWARE = [
     # Must be first so OPTIONS preflight gets CORS headers even on errors/redirects
     "corsheaders.middleware.CorsMiddleware",
