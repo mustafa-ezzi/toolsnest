@@ -55,8 +55,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
+    # Must be first so OPTIONS preflight gets CORS headers even on errors/redirects
     "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -124,60 +125,52 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ---------- CORS / CSRF (needed for SPA on another Railway domain) ----------
-_default_cors = "http://localhost:5173,http://127.0.0.1:5173"
+# ---------- CORS / CSRF (SPA frontend on another Railway domain) ----------
+from corsheaders.defaults import default_headers, default_methods
+
+_default_cors = (
+    "http://localhost:5173,"
+    "http://127.0.0.1:5173,"
+    "https://toolsnest.up.railway.app"
+)
 CORS_ALLOWED_ORIGINS = [
     origin.strip().rstrip("/")
     for origin in os.getenv("CORS_ORIGINS", _default_cors).split(",")
     if origin.strip()
 ]
 
-# Allow any *.up.railway.app frontend without listing every preview URL
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://[\w-]+\.up\.railway\.app$",
     r"^https://[\w.-]+\.railway\.app$",
 ]
-# Extra regexes from env (comma-separated)
 for _rx in os.getenv("CORS_ORIGIN_REGEXES", "").split(","):
     _rx = _rx.strip()
     if _rx:
         CORS_ALLOWED_ORIGIN_REGEXES.append(_rx)
 
 CORS_ALLOW_CREDENTIALS = False
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
+CORS_ALLOW_METHODS = list(default_methods)
+CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",
     "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
     "x-csrftoken",
     "x-requested-with",
 ]
 CORS_PREFLIGHT_MAX_AGE = 86400
+CORS_URLS_REGEX = r"^/api/.*$"
 
-# Emergency switch while debugging (set CORS_ALLOW_ALL=True on Railway)
-if os.getenv("CORS_ALLOW_ALL", "").lower() in ("1", "true", "yes"):
-    CORS_ALLOW_ALL_ORIGINS = True
+# On Railway, allow all origins by default so POST preflight never blocks deploy.
+# Set CORS_ALLOW_ALL=False once CORS_ORIGINS is confirmed correct.
+_on_railway = bool(os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("RAILWAY_STATIC_URL"))
+_cors_all_env = os.getenv("CORS_ALLOW_ALL", "True" if _on_railway else "False")
+CORS_ALLOW_ALL_ORIGINS = _cors_all_env.lower() in ("1", "true", "yes")
 
-# CSRF trusted origins for admin/session POSTs from SPA domains
 CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
 for _origin in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(","):
     _origin = _origin.strip().rstrip("/")
     if _origin and _origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(_origin)
-# Always trust Railway HTTPS frontends for CSRF
-if "https://*.up.railway.app" not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append("https://*.up.railway.app")
+CSRF_TRUSTED_ORIGINS.append("https://*.up.railway.app")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
