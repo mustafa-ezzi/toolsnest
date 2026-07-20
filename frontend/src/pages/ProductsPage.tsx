@@ -1,8 +1,17 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { useSearchParams } from "react-router-dom";
 import { getBrands, getCategories, getProducts } from "../api/client";
 import type { Brand, Category, Product } from "../types";
 import ProductCard from "../components/ProductCard";
+
+const PAGE_SIZE = 24;
 
 export default function ProductsPage() {
   const [params, setParams] = useSearchParams();
@@ -14,8 +23,14 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [count, setCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [localQ, setLocalQ] = useState(q);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadingMoreRef = useRef(false);
 
   useEffect(() => {
     getBrands().then(setBrands).catch(() => setBrands([]));
@@ -26,33 +41,89 @@ export default function ProductsPage() {
     setLocalQ(q);
   }, [q]);
 
+  // Reset and load first page when filters change
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setProducts([]);
+    setPage(1);
+    setHasMore(false);
+    loadingMoreRef.current = false;
+
     getProducts({
       brand: brand || undefined,
       category: category || undefined,
       search: q || undefined,
-      page_size: "48",
+      page: "1",
+      page_size: String(PAGE_SIZE),
     })
       .then((data) => {
         if (cancelled) return;
         setProducts(data.results);
         setCount(data.count);
+        setHasMore(Boolean(data.next));
+        setPage(1);
       })
       .catch(() => {
         if (!cancelled) {
           setProducts([]);
           setCount(0);
+          setHasMore(false);
         }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
   }, [brand, category, q]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMoreRef.current || !hasMore || loading) return;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const data = await getProducts({
+        brand: brand || undefined,
+        category: category || undefined,
+        search: q || undefined,
+        page: String(nextPage),
+        page_size: String(PAGE_SIZE),
+      });
+      setProducts((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        const appended = data.results.filter((p) => !seen.has(p.id));
+        return [...prev, ...appended];
+      });
+      setCount(data.count);
+      setHasMore(Boolean(data.next));
+      setPage(nextPage);
+    } catch {
+      /* keep current list; user can scroll again */
+    } finally {
+      loadingMoreRef.current = false;
+      setLoadingMore(false);
+    }
+  }, [brand, category, q, hasMore, loading, page]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          void loadMore();
+        }
+      },
+      { root: null, rootMargin: "400px 0px", threshold: 0 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore, products.length]);
 
   const title = useMemo(() => {
     if (brand) {
@@ -86,7 +157,9 @@ export default function ProductsPage() {
           {title}
         </h1>
         <p className="mt-2 text-slate-500">
-          Showing {loading ? "…" : count} item{count === 1 ? "" : "s"}
+          {loading
+            ? "Loading…"
+            : `Showing ${products.length} of ${count} item${count === 1 ? "" : "s"}`}
         </p>
       </div>
 
@@ -181,11 +254,23 @@ export default function ProductsPage() {
               No products match these filters.
             </div>
           ) : (
-            <div className="stagger grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {products.map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} />
-              ))}
-            </div>
+            <>
+              <div className="stagger grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {products.map((p, i) => (
+                  <ProductCard key={p.id} product={p} index={i} />
+                ))}
+              </div>
+              <div ref={sentinelRef} className="h-8 w-full" aria-hidden />
+              <div className="py-8 text-center text-sm text-slate-500">
+                {loadingMore
+                  ? "Loading more…"
+                  : hasMore
+                    ? "Scroll for more"
+                    : products.length > 0
+                      ? "You’ve reached the end"
+                      : null}
+              </div>
+            </>
           )}
         </div>
       </div>

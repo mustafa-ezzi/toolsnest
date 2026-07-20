@@ -27,17 +27,27 @@ export default function LandingPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [b, br, c, p] = await Promise.all([
+        const [b, br, c] = await Promise.all([
           getBanners(),
           getBrands(),
           getCategories(),
-          getProducts({ page_size: "50" }),
         ]);
         if (cancelled) return;
         setBanners(b);
         setBrands(br);
         setCategories(c);
-        setProducts(p.results);
+
+        // Small page per brand for landing teasers — not the full catalog
+        const brandPages = await Promise.all(
+          br.map((brand) =>
+            getProducts({ brand: brand.slug, page_size: "4" }).then((page) => ({
+              slug: brand.slug,
+              products: page.results,
+            })),
+          ),
+        );
+        if (cancelled) return;
+        setProducts(brandPages.flatMap((x) => x.products));
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof Error ? e.message : "Failed to load storefront");

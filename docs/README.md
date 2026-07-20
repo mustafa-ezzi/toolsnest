@@ -11,6 +11,7 @@
 | [RND.md](./RND.md) | Architecture, stack choices, R2, Railway, custom domain |
 | [REPLIT-UI.md](./REPLIT-UI.md) | Paste into Replit to generate the UI |
 | [PHASES.md](./PHASES.md) | Phase-wise build plan + extra feature ideas |
+| [EXCEL-PRODUCT-IMPORT.md](./EXCEL-PRODUCT-IMPORT.md) | Bulk create products from Excel + how pictures work |
 
 **Quick start**
 

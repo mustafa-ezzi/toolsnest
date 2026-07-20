@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Brand, Category, Product } from "../../types";
 import {
   adminDelete,
@@ -58,32 +58,94 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [count, setCount] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const sentinelRef = useRef<HTMLTableRowElement | null>(null);
+  const loadingMoreRef = useRef(false);
+  const pageSize = 40;
 
-  function load() {
-    setLoading(true);
-    const q = search ? `?search=${encodeURIComponent(search)}&page_size=100` : "?page_size=100";
-    Promise.all([
-      adminGet<Paginated<Product>>(`/api/admin/products/${q}`),
+  function loadBrandsAndCategories() {
+    return Promise.all([
       adminGet<Paginated<Brand>>("/api/admin/brands/?page_size=100"),
       adminGet<Paginated<Category>>("/api/admin/categories/?page_size=100"),
+    ]).then(([b, c]) => {
+      setBrands(b.results);
+      setCategories(c.results);
+    });
+  }
+
+  function loadFirstPage() {
+    setLoading(true);
+    setProducts([]);
+    setPage(1);
+    setHasMore(false);
+    loadingMoreRef.current = false;
+    const q = new URLSearchParams({ page: "1", page_size: String(pageSize) });
+    if (search) q.set("search", search);
+    Promise.all([
+      adminGet<Paginated<Product>>(`/api/admin/products/?${q}`),
+      loadBrandsAndCategories(),
     ])
-      .then(([p, b, c]) => {
+      .then(([p]) => {
         setProducts(p.results);
-        setBrands(b.results);
-        setCategories(c.results);
+        setCount(p.count);
+        setHasMore(Boolean(p.next));
+        setPage(1);
       })
       .finally(() => setLoading(false));
   }
 
+  async function loadMore() {
+    if (loadingMoreRef.current || !hasMore || loading) return;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const q = new URLSearchParams({
+        page: String(nextPage),
+        page_size: String(pageSize),
+      });
+      if (search) q.set("search", search);
+      const p = await adminGet<Paginated<Product>>(`/api/admin/products/?${q}`);
+      setProducts((prev) => {
+        const seen = new Set(prev.map((x) => x.id));
+        return [...prev, ...p.results.filter((x) => !seen.has(x.id))];
+      });
+      setCount(p.count);
+      setHasMore(Boolean(p.next));
+      setPage(nextPage);
+    } finally {
+      loadingMoreRef.current = false;
+      setLoadingMore(false);
+    }
+  }
+
   useEffect(() => {
-    const t = window.setTimeout(load, 300);
+    const t = window.setTimeout(loadFirstPage, 300);
     return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !hasMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) void loadMore();
+      },
+      { root: null, rootMargin: "200px 0px", threshold: 0 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMore, page, products.length, search]);
 
   function openCreate() {
     setEditing(null);
@@ -136,7 +198,7 @@ export default function AdminProductsPage() {
         await adminPost("/api/admin/products/", payload);
       }
       setModalOpen(false);
-      load();
+      loadFirstPage();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Save failed");
     } finally {
@@ -168,7 +230,7 @@ export default function AdminProductsPage() {
         setModalOpen(false);
         setEditing(null);
       }
-      load();
+      loadFirstPage();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Delete failed");
     }
@@ -230,53 +292,64 @@ export default function AdminProductsPage() {
                 </td>
               </tr>
             ) : (
-              products.map((p) => (
-                <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                  <td className="px-4 py-3">
-                    <img
-                      src={p.primary_image || "https://placehold.co/48"}
-                      alt=""
-                      className="h-12 w-12 rounded-lg object-cover"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-white">{p.name}</p>
-                    <p className="text-xs text-slate-500">{p.sku}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <BrandBadge name={p.brand.name} color={p.brand.primary_color} />
-                  </td>
-                  <td className="px-4 py-3 text-slate-400">
-                    {p.category?.name || "—"}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-[#2dd4bf]">
-                    {formatPrice(p.price)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StockBadge qty={p.stock_qty} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => openEdit(p)}
-                        className="rounded-lg border border-white/10 p-2 text-slate-400 hover:text-white"
-                        title="Edit"
-                      >
-                        ✎
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void remove(p.id)}
-                        className="rounded-lg border border-red-500/30 p-2 text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                        title="Delete"
-                      >
-                        🗑
-                      </button>
-                    </div>
+              <>
+                {products.map((p) => (
+                  <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                    <td className="px-4 py-3">
+                      <img
+                        src={p.primary_image || "https://placehold.co/48"}
+                        alt=""
+                        className="h-12 w-12 rounded-lg object-cover"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-white">{p.name}</p>
+                      <p className="text-xs text-slate-500">{p.sku}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <BrandBadge name={p.brand.name} color={p.brand.primary_color} />
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">
+                      {p.category?.name || "—"}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-[#2dd4bf]">
+                      {formatPrice(p.price)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StockBadge qty={p.stock_qty} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(p)}
+                          className="rounded-lg border border-white/10 p-2 text-slate-400 hover:text-white"
+                          title="Edit"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void remove(p.id)}
+                          className="rounded-lg border border-red-500/30 p-2 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                          title="Delete"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                <tr ref={sentinelRef}>
+                  <td colSpan={7} className="px-4 py-4 text-center text-xs text-slate-500">
+                    {loadingMore
+                      ? "Loading more…"
+                      : hasMore
+                        ? `Showing ${products.length} of ${count} — scroll for more`
+                        : `Showing ${products.length} of ${count}`}
                   </td>
                 </tr>
-              ))
+              </>
             )}
           </tbody>
         </table>
