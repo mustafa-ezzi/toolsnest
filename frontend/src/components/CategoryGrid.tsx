@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import { useRef } from "react";
 import type { Category } from "../types";
+import { useScrollReveal } from "../hooks/useScrollReveal";
 
 const ICONS: Record<string, string> = {
   "power-tools": "⚡",
@@ -20,8 +22,16 @@ const CAT_COLORS = [
 ];
 
 export default function CategoryGrid({ categories }: { categories: Category[] }) {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  useScrollReveal(sectionRef, {
+    childSelector: ".category-tile",
+    y: 28,
+    duration: 520,
+    childStagger: 45,
+  });
+
   return (
-    <section className="py-16">
+    <section ref={sectionRef} className="py-16">
       <div className="mx-auto max-w-7xl px-4 text-center">
         <h2 className="brand-font text-3xl font-bold sm:text-4xl">
           <span className="section-title-accent">Shop by Category</span>
@@ -31,7 +41,7 @@ export default function CategoryGrid({ categories }: { categories: Category[] })
           Find the exact tools you need from our comprehensive selection of
           professional-grade equipment.
         </p>
-        <div className="stagger mt-10 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="mt-10 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
           {categories.map((cat, i) => {
             const palette = CAT_COLORS[i % CAT_COLORS.length];
             return (

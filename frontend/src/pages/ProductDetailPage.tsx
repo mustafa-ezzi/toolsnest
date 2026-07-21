@@ -1,14 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { animate } from "animejs";
+import { createTimeline } from "animejs/timeline";
+import { stagger } from "animejs/utils";
 import { formatPrice, getProduct, getRelatedProducts } from "../api/client";
 import type { Product } from "../types";
 import { useCart } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
 import { getProductBadges } from "../utils/badges";
+import { useReducedMotion } from "../hooks/useReducedMotion";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const { addItem } = useCart();
+  const reduceMotion = useReducedMotion();
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
   const [qty, setQty] = useState(1);
@@ -16,6 +21,11 @@ export default function ProductDetailPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
+
+  const galleryRef = useRef<HTMLDivElement | null>(null);
+  const infoRef = useRef<HTMLDivElement | null>(null);
+  const addBtnRef = useRef<HTMLButtonElement | null>(null);
+  const relatedRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -30,6 +40,44 @@ export default function ProductDetailPage() {
       .catch(() => setError("Product not found"))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  // Entrance sequence when product loads
+  useEffect(() => {
+    if (loading || !product || reduceMotion) return;
+    const gallery = galleryRef.current;
+    const info = infoRef.current;
+    if (!gallery || !info) return;
+
+    const timeline = createTimeline({
+      defaults: { duration: 520, ease: "out(3)" },
+    });
+    timeline
+      .add(gallery, { opacity: [0, 1], scale: [0.96, 1] })
+      .add(info, { opacity: [0, 1], translateX: [28, 0] }, "-=320")
+      .add(".pd-price", { opacity: [0, 1], translateY: [10, 0] }, "-=280")
+      .add(".pd-actions", { opacity: [0, 1], translateY: [12, 0] }, "-=260");
+
+    return () => {
+      timeline.pause();
+    };
+  }, [loading, product, reduceMotion, slug]);
+
+  // Related products stagger when they appear
+  useEffect(() => {
+    if (reduceMotion || related.length === 0) return;
+    const cards = relatedRef.current?.querySelectorAll(".product-card");
+    if (!cards?.length) return;
+    const anim = animate(cards, {
+      opacity: [0, 1],
+      translateY: [16, 0],
+      duration: 420,
+      ease: "out(3)",
+      delay: stagger(60),
+    });
+    return () => {
+      anim.pause();
+    };
+  }, [related, reduceMotion]);
 
   if (loading) {
     return <div className="py-24 text-center text-slate-500">Loading product…</div>;
@@ -54,10 +102,23 @@ export default function ProductDetailPage() {
   const brandColor = product.brand.primary_color;
   const badges = getProductBadges(product);
 
+  function onAddToCart() {
+    addItem(product!, qty);
+    setAdded(true);
+    if (!reduceMotion && addBtnRef.current) {
+      animate(addBtnRef.current, {
+        scale: [1, 1.06, 1],
+        duration: 360,
+        ease: "out(3)",
+      });
+    }
+    window.setTimeout(() => setAdded(false), 1600);
+  }
+
   return (
     <div>
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 lg:grid-cols-2">
-        <div className="animate-fade-up">
+        <div ref={galleryRef}>
           <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm">
             <div className="aspect-square overflow-hidden bg-slate-100">
               <img
@@ -97,7 +158,7 @@ export default function ProductDetailPage() {
           )}
         </div>
 
-        <div className="animate-slide-in">
+        <div ref={infoRef}>
           <span
             className="inline-flex rounded-full px-3 py-1 text-xs font-semibold text-white"
             style={{ backgroundColor: brandColor }}
@@ -109,7 +170,7 @@ export default function ProductDetailPage() {
             {product.name}
           </h1>
           <p className="mt-2 text-sm text-slate-400">SKU: {product.sku}</p>
-          <p className="mt-4 text-3xl font-semibold text-[#0F4C5C]">
+          <p className="pd-price mt-4 text-3xl font-semibold text-[#0F4C5C]">
             {formatPrice(product.price)}
           </p>
           {product.compare_at_price && (
@@ -136,7 +197,7 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="pd-actions mt-8 flex flex-wrap items-center gap-3">
             <div className="flex items-center rounded-xl border border-slate-200 bg-white">
               <button
                 type="button"
@@ -155,13 +216,10 @@ export default function ProductDetailPage() {
               </button>
             </div>
             <button
+              ref={addBtnRef}
               type="button"
               className="btn-primary rounded-xl bg-[#0F4C5C] px-6 py-3 text-sm font-semibold text-white"
-              onClick={() => {
-                addItem(product, qty);
-                setAdded(true);
-                window.setTimeout(() => setAdded(false), 1600);
-              }}
+              onClick={onAddToCart}
             >
               {added ? "Added!" : "Add to cart"}
             </button>
@@ -181,7 +239,10 @@ export default function ProductDetailPage() {
               Related products
             </h2>
             <p className="mt-1 text-slate-500">More tools you might need</p>
-            <div className="stagger mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              ref={relatedRef}
+              className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
+            >
               {related.map((p, i) => (
                 <ProductCard key={p.id} product={p} index={i} />
               ))}

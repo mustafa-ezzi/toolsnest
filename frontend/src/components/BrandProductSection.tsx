@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import { useRef } from "react";
 import type { Brand, Product } from "../types";
 import ProductCard from "./ProductCard";
 import { darken, readableTextColor, withAlpha } from "../utils/color";
+import { useScrollReveal } from "../hooks/useScrollReveal";
 
 type Props = {
   brand: Brand;
@@ -10,6 +12,14 @@ type Props = {
 };
 
 export default function BrandProductSection({ brand, products, tagline }: Props) {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  useScrollReveal(sectionRef, {
+    childSelector: ".product-card",
+    y: 40,
+    duration: 580,
+    childStagger: 70,
+  });
+
   if (!products.length) return null;
 
   const primary = brand.primary_color || "#0F4C5C";
@@ -18,10 +28,10 @@ export default function BrandProductSection({ brand, products, tagline }: Props)
   const isDarkText = textColor === "#111827";
 
   return (
-    <section className="py-10">
+    <section ref={sectionRef} className="py-10">
       <div className="mx-auto max-w-7xl px-4">
         <div
-          className="group/band relative mb-8 overflow-hidden rounded-[2rem] px-6 py-7 sm:px-9 sm:py-8"
+          className="brand-band group/band relative mb-8 overflow-hidden rounded-[2rem] px-6 py-7 sm:px-9 sm:py-8"
           style={{
             background: `linear-gradient(125deg, ${primary} 0%, ${darken(primary, 0.16)} 55%, ${secondary} 100%)`,
             color: textColor,
@@ -102,7 +112,7 @@ export default function BrandProductSection({ brand, products, tagline }: Props)
           </div>
         </div>
 
-        <div className="stagger grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {products.slice(0, 4).map((p, i) => (
             <ProductCard key={p.id} product={p} index={i} />
           ))}

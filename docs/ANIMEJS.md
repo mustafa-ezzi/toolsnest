@@ -290,11 +290,11 @@ For ToolsNest’s current scope (e-commerce + admin), **Anime.js is a good fit**
 2. Cart badge bounce on `count` change
 3. Optional: replace product-card CSS stagger with Anime `stagger()` on filter change only
 
-### Phase B — Storefront polish
+### Phase B — Storefront polish ✅ (implemented)
 
-1. Landing hero timeline (`HeroCarousel` text layers)
-2. Scroll-in for `BrandProductSection` blocks
-3. Product detail entrance sequence
+1. Landing hero timeline (`HeroCarousel` text layers) — done in Phase A
+2. Scroll-in for `BrandProductSection` + `CategoryGrid` via `useScrollReveal` + `onScroll`
+3. Product detail entrance sequence + Add-to-cart pulse + related-product stagger
 
 ### Phase C — Admin (optional)
 
