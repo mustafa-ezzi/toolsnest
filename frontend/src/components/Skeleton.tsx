@@ -14,15 +14,15 @@ export function Skeleton({ className = "" }: SkeletonProps) {
 
 export function ProductCardSkeleton() {
   return (
-    <div className="flex flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white p-3">
-      <Skeleton className="aspect-[4/3] w-full rounded-[1.25rem]" />
-      <div className="space-y-2 px-2 pb-3 pt-4">
-        <Skeleton className="h-3 w-1/3 rounded-full" />
-        <Skeleton className="h-4 w-[80%] rounded-full" />
-        <Skeleton className="h-4 w-[40%] rounded-full" />
-        <div className="flex items-center justify-between pt-2">
-          <Skeleton className="h-6 w-20 rounded-full" />
-          <Skeleton className="h-9 w-9 rounded-xl" />
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-1.5 sm:rounded-[1.75rem] sm:p-3">
+      <Skeleton className="aspect-square w-full rounded-xl sm:aspect-[4/3] sm:rounded-[1.25rem]" />
+      <div className="space-y-2 px-1.5 pb-2 pt-2 sm:space-y-2 sm:px-2 sm:pb-3 sm:pt-4">
+        <Skeleton className="hidden h-3 w-1/3 rounded-full sm:block" />
+        <Skeleton className="h-3 w-[85%] rounded-full sm:h-4" />
+        <Skeleton className="h-3 w-[55%] rounded-full sm:h-4" />
+        <div className="flex items-center justify-between pt-1 sm:pt-2">
+          <Skeleton className="h-4 w-14 rounded-full sm:h-6 sm:w-20" />
+          <Skeleton className="h-7 w-10 rounded-full sm:h-9 sm:w-9 sm:rounded-xl" />
         </div>
       </div>
     </div>
@@ -32,7 +32,7 @@ export function ProductCardSkeleton() {
 export function ProductGridSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div
-      className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+      className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3"
       aria-busy="true"
       aria-label="Loading products"
     >
@@ -90,7 +90,7 @@ export function LandingSkeleton() {
         </div>
         <div className="mx-auto mt-14 max-w-7xl space-y-10">
           <Skeleton className="h-28 w-full rounded-[2rem]" />
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
             {Array.from({ length: 4 }, (_, i) => (
               <ProductCardSkeleton key={i} />
             ))}

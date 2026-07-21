@@ -244,7 +244,7 @@ export default function ProductDetailPage() {
             <p className="mt-1 text-slate-500">More tools you might need</p>
             <div
               ref={relatedRef}
-              className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
+              className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4"
             >
               {related.map((p, i) => (
                 <ProductCard key={p.id} product={p} index={i} />

@@ -315,7 +315,7 @@ export default function ProductsPage() {
             <>
               <div
                 ref={gridRef}
-                className="stagger grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+                className="stagger grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3"
               >
                 {products.map((p, i) => (
                   <ProductCard key={p.id} product={p} index={i} />

@@ -20,14 +20,14 @@ export default function ProductCard({ product, index = 0 }: Props) {
 
   return (
     <article
-      className="product-card group flex flex-col overflow-hidden rounded-[1.75rem]"
+      className="product-card group flex flex-col overflow-hidden rounded-2xl sm:rounded-[1.75rem]"
       style={{ animationDelay: `${index * 0.05}s` }}
     >
       <Link
         to={`/products/${product.slug}`}
         className="relative block overflow-hidden"
       >
-        <div className="aspect-[4/3] overflow-hidden m-3 rounded-[1.25rem] neo-inset-sm">
+        <div className="aspect-square overflow-hidden m-1.5 rounded-xl neo-inset-sm sm:aspect-[4/3] sm:m-3 sm:rounded-[1.25rem]">
           <img
             src={image}
             alt={product.name}
@@ -37,17 +37,17 @@ export default function ProductCard({ product, index = 0 }: Props) {
         </div>
         <div className="product-card__shine pointer-events-none absolute inset-0" />
         <span
-          className="absolute left-5 top-5 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white shadow-md"
+          className="absolute left-2.5 top-2.5 max-w-[70%] truncate rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-white shadow-md sm:left-5 sm:top-5 sm:max-w-none sm:px-2.5 sm:py-1 sm:text-[11px]"
           style={{ backgroundColor: brandColor }}
         >
           {product.brand?.name}
         </span>
         {badges.length > 0 && (
-          <div className="absolute right-5 top-5 flex flex-col gap-1">
+          <div className="absolute right-2.5 top-2.5 flex flex-col gap-0.5 sm:right-5 sm:top-5 sm:gap-1">
             {badges.map((b) => (
               <span
                 key={b.label}
-                className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide shadow-sm ${b.className}`}
+                className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide shadow-sm sm:px-2 sm:text-[10px] ${b.className}`}
               >
                 {b.label}
               </span>
@@ -56,23 +56,23 @@ export default function ProductCard({ product, index = 0 }: Props) {
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col gap-1.5 px-5 pb-5 pt-1">
-        <p className="text-xs font-medium uppercase tracking-wide text-[var(--neo-muted)]">
+      <div className="flex flex-1 flex-col gap-0.5 px-2.5 pb-2.5 pt-0.5 sm:gap-1.5 sm:px-5 sm:pb-5 sm:pt-1">
+        <p className="hidden text-xs font-medium uppercase tracking-wide text-[var(--neo-muted)] sm:block">
           {product.category?.name || "Tools"}
         </p>
         <Link
           to={`/products/${product.slug}`}
-          className="brand-font line-clamp-2 text-[15px] font-semibold leading-snug text-[var(--neo-ink)] transition group-hover:text-[var(--neo-accent)]"
+          className="brand-font line-clamp-2 text-[12px] font-semibold leading-snug text-[var(--neo-ink)] transition group-hover:text-[var(--neo-accent)] sm:text-[15px]"
         >
           {product.name}
         </Link>
-        <div className="mt-auto flex items-center justify-between gap-3 pt-3">
+        <div className="mt-auto flex items-center justify-between gap-1.5 pt-2 sm:gap-3 sm:pt-3">
           <div className="min-w-0">
-            <p className="truncate text-base font-semibold text-[var(--neo-accent)] sm:text-lg">
+            <p className="truncate text-[13px] font-semibold text-[var(--neo-accent)] sm:text-lg">
               {formatPrice(product.price)}
             </p>
             {product.compare_at_price && (
-              <p className="text-xs text-[var(--neo-muted)] line-through">
+              <p className="text-[10px] text-[var(--neo-muted)] line-through sm:text-xs">
                 {formatPrice(product.compare_at_price)}
               </p>
             )}
@@ -80,7 +80,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
           <button
             type="button"
             onClick={() => addItem(product)}
-            className="neo-btn-fill shrink-0 rounded-full px-4 py-2.5 text-xs font-semibold min-h-11 min-w-[4.5rem]"
+            className="neo-btn-fill shrink-0 rounded-full px-2.5 py-1.5 text-[10px] font-semibold min-h-8 sm:min-h-11 sm:min-w-[4.5rem] sm:px-4 sm:py-2.5 sm:text-xs"
           >
             Add
           </button>
