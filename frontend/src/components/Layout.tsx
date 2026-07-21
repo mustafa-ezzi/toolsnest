@@ -9,7 +9,7 @@ export default function Layout() {
     <div className="flex min-h-screen flex-col bg-[var(--neo-bg)]">
       <AnnouncementBar />
       <Header />
-      <main className="flex-1">
+      <main className="page-bottom-safe flex-1">
         <Outlet />
       </main>
       <Footer />

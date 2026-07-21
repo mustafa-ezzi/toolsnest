@@ -51,11 +51,11 @@ export default function BrandProductSection({ brand, products, tagline }: Props)
             style={{ background: withAlpha("#000000", 0.16) }}
           />
 
-          <div className="relative flex flex-wrap items-center justify-between gap-5">
-            <div className="flex items-center gap-4">
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-5">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
               {brand.logo_url && (
                 <span
-                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl p-2"
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl p-2 sm:h-16 sm:w-16"
                   style={{
                     background: withAlpha(
                       isDarkText ? "#000000" : "#ffffff",
@@ -71,7 +71,7 @@ export default function BrandProductSection({ brand, products, tagline }: Props)
                   />
                 </span>
               )}
-              <div>
+              <div className="min-w-0">
                 <span
                   className="mb-1 inline-flex items-center rounded-full px-3 py-0.5 text-[11px] font-bold uppercase tracking-widest"
                   style={{
@@ -83,7 +83,7 @@ export default function BrandProductSection({ brand, products, tagline }: Props)
                 >
                   Brand Spotlight
                 </span>
-                <h2 className="brand-font text-3xl font-extrabold leading-tight sm:text-4xl">
+                <h2 className="brand-font text-2xl font-extrabold leading-tight sm:text-3xl lg:text-4xl">
                   {brand.name}
                 </h2>
                 <p
@@ -97,7 +97,7 @@ export default function BrandProductSection({ brand, products, tagline }: Props)
 
             <Link
               to={`/products?brand=${brand.slug}`}
-              className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition duration-300 hover:gap-3"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition duration-300 hover:gap-3 sm:w-auto"
               style={{
                 background: isDarkText ? "#111827" : "#ffffff",
                 color: isDarkText ? "#ffffff" : primary,

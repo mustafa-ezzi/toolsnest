@@ -68,18 +68,19 @@ export default function Header() {
             />
           </form>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
             <button
               type="button"
-              className="liquid-icon-btn h-10 w-10 md:hidden"
-              aria-label="Toggle menu"
+              className="liquid-icon-btn h-11 w-11 md:hidden"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
               onClick={() => setMenuOpen((v) => !v)}
             >
-              <MenuIcon />
+              {menuOpen ? <CloseIcon /> : <MenuIcon />}
             </button>
             <Link
               to="/cart"
-              className="liquid-icon-btn relative h-10 w-10"
+              className="liquid-icon-btn relative h-11 w-11"
               aria-label="Cart"
             >
               <CartIcon />
@@ -96,16 +97,16 @@ export default function Header() {
         </div>
 
         {menuOpen && (
-          <div className="liquid-glass__inner border-t border-white/30 px-4 py-3 md:hidden animate-fade-in">
+          <div className="liquid-glass__inner border-t border-white/30 px-3 py-3 md:hidden animate-fade-in sm:px-4">
             <form onSubmit={onSearch} className="mb-3">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search products, brands..."
-                className="liquid-search w-full px-4 py-2.5 text-sm"
+                className="liquid-search w-full px-4 py-3 text-sm"
               />
             </form>
-            <div className="flex flex-col gap-1 text-sm font-medium text-[var(--neo-ink)]">
+            <div className="flex flex-col gap-1.5 text-sm font-medium text-[var(--neo-ink)]">
               <Link
                 to="/products"
                 className="liquid-nav-link"
@@ -159,6 +160,14 @@ function MenuIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M6 6l12 12M18 6L6 18" />
     </svg>
   );
 }

@@ -31,30 +31,30 @@ export default function CategoryGrid({ categories }: { categories: Category[] })
   });
 
   return (
-    <section ref={sectionRef} className="py-16">
+    <section ref={sectionRef} className="py-10 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 text-center">
-        <h2 className="brand-font text-3xl font-bold sm:text-4xl">
+        <h2 className="brand-font text-2xl font-bold sm:text-3xl lg:text-4xl">
           <span className="section-title-accent">Shop by Category</span>
         </h2>
         <div className="section-underline" />
-        <p className="mx-auto mt-4 max-w-2xl text-[var(--neo-muted)]">
+        <p className="mx-auto mt-4 max-w-2xl text-sm text-[var(--neo-muted)] sm:text-base">
           Find the exact tools you need from our comprehensive selection of
           professional-grade equipment.
         </p>
-        <div className="mt-10 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-5 sm:grid-cols-3 lg:grid-cols-6">
           {categories.map((cat, i) => {
             const palette = CAT_COLORS[i % CAT_COLORS.length];
             return (
               <Link
                 key={cat.id}
                 to={`/products?category=${cat.slug}`}
-                className="category-tile flex flex-col items-center gap-3 rounded-[1.5rem] px-4 py-8"
+                className="category-tile flex min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-[1.25rem] px-3 py-5 sm:min-h-0 sm:gap-3 sm:rounded-[1.5rem] sm:px-4 sm:py-8"
                 style={{
                   background: `linear-gradient(165deg, ${palette.bg} 0%, var(--neo-surface) 70%)`,
                 }}
               >
                 <span
-                  className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl"
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl text-xl sm:h-14 sm:w-14 sm:text-2xl"
                   style={{
                     background: palette.bg,
                     color: palette.fg,
@@ -64,7 +64,7 @@ export default function CategoryGrid({ categories }: { categories: Category[] })
                   {ICONS[cat.slug] || "🛠️"}
                 </span>
                 <span
-                  className="text-sm font-semibold"
+                  className="line-clamp-2 text-center text-xs font-semibold sm:text-sm"
                   style={{ color: palette.fg }}
                 >
                   {cat.name}

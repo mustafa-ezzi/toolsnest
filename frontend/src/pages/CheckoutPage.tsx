@@ -258,13 +258,13 @@ export default function CheckoutPage() {
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                 placeholder="Coupon code"
-                className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#147D8A]"
+                className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-[#147D8A]"
               />
               <button
                 type="button"
                 onClick={() => void applyCoupon()}
                 disabled={couponLoading || !couponInput.trim()}
-                className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-[#0F4C5C] hover:bg-slate-50 disabled:opacity-50"
+                className="min-h-11 shrink-0 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-[#0F4C5C] hover:bg-slate-50 disabled:opacity-50"
               >
                 {couponLoading ? "…" : "Apply"}
               </button>

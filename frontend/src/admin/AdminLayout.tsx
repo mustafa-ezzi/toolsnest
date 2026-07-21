@@ -75,7 +75,7 @@ export default function AdminLayout() {
           </div>
           <button
             type="button"
-            className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-slate-400 hover:bg-white/5 hover:text-white lg:hidden"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
           >
@@ -116,7 +116,7 @@ export default function AdminLayout() {
         <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/5 bg-[#0f1419]/95 px-4 py-3 backdrop-blur sm:px-6 lg:justify-end lg:px-8 lg:py-4">
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300 hover:bg-white/5 lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-slate-300 hover:bg-white/5 lg:hidden"
             aria-label="Open menu"
             aria-expanded={sidebarOpen}
             onClick={() => setSidebarOpen(true)}

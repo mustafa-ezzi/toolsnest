@@ -32,6 +32,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [localQ, setLocalQ] = useState(q);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -182,20 +183,46 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <div className="mb-8 animate-fade-up">
-        <h1 className="brand-font text-3xl font-bold text-slate-900 sm:text-4xl">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10">
+      <div className="mb-6 animate-fade-up sm:mb-8">
+        <h1 className="brand-font text-2xl font-bold text-slate-900 sm:text-3xl lg:text-4xl">
           {title}
         </h1>
-        <p className="mt-2 text-slate-500">
+        <p className="mt-2 text-sm text-slate-500 sm:text-base">
           {loading
             ? "Loading…"
             : `Showing ${products.length} of ${count} item${count === 1 ? "" : "s"}`}
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-        <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm animate-fade-up">
+      <div className="mb-4 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((v) => !v)}
+          className="flex min-h-11 w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm"
+          aria-expanded={filtersOpen}
+        >
+          <span className="inline-flex items-center gap-2">
+            <span className="text-[#0F4C5C]">⚙</span>
+            Filters
+            {(brand || category || q) && (
+              <span className="rounded-full bg-[#0F4C5C]/10 px-2 py-0.5 text-[11px] font-bold text-[#0F4C5C]">
+                Active
+              </span>
+            )}
+          </span>
+          <span className="text-slate-400" aria-hidden>
+            {filtersOpen ? "▴" : "▾"}
+          </span>
+        </button>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[260px_1fr] lg:gap-8">
+        <aside
+          className={`h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm animate-fade-up ${
+            filtersOpen ? "block" : "hidden lg:block"
+          }`}
+        >
           <div className="mb-4 flex items-center gap-2">
             <span className="text-[#0F4C5C]">⚙</span>
             <h2 className="font-semibold text-slate-900">Filters</h2>
@@ -206,7 +233,7 @@ export default function ProductsPage() {
               value={localQ}
               onChange={(e) => setLocalQ(e.target.value)}
               placeholder="Product name or SKU..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-[#147D8A] focus:ring-2 focus:ring-[#147D8A]/15"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none focus:border-[#147D8A] focus:ring-2 focus:ring-[#147D8A]/15"
             />
           </form>
 
@@ -214,8 +241,8 @@ export default function ProductsPage() {
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Categories
             </h3>
-            <div className="space-y-2">
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+            <div className="max-h-56 space-y-1 overflow-y-auto pr-1 sm:max-h-none">
+              <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-sm text-slate-700">
                 <input
                   type="radio"
                   name="category"
@@ -227,7 +254,7 @@ export default function ProductsPage() {
               {categories.map((c) => (
                 <label
                   key={c.id}
-                  className="flex cursor-pointer items-center gap-2 text-sm text-slate-700"
+                  className="flex min-h-10 cursor-pointer items-center gap-2.5 text-sm text-slate-700"
                 >
                   <input
                     type="radio"
@@ -245,8 +272,8 @@ export default function ProductsPage() {
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Brands
             </h3>
-            <div className="space-y-2">
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+            <div className="space-y-1">
+              <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-sm text-slate-700">
                 <input
                   type="radio"
                   name="brand"
@@ -258,7 +285,7 @@ export default function ProductsPage() {
               {brands.map((b) => (
                 <label
                   key={b.id}
-                  className="flex cursor-pointer items-center gap-2 text-sm text-slate-700"
+                  className="flex min-h-10 cursor-pointer items-center gap-2.5 text-sm text-slate-700"
                 >
                   <input
                     type="radio"

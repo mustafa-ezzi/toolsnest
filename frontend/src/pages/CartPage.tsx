@@ -73,10 +73,10 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
-                  <div className="flex items-center rounded-full bg-slate-100 px-1">
+                  <div className="flex h-11 items-center rounded-full bg-slate-100 px-1">
                     <button
                       type="button"
-                      className="px-3 py-2 text-slate-600 transition hover:text-[#0F4C5C]"
+                      className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:text-[#0F4C5C]"
                       onClick={() =>
                         updateQty(item.product.id, item.quantity - 1)
                       }
@@ -89,7 +89,7 @@ export default function CartPage() {
                     </span>
                     <button
                       type="button"
-                      className="px-3 py-2 text-slate-600 transition hover:text-[#0F4C5C]"
+                      className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:text-[#0F4C5C]"
                       onClick={() =>
                         updateQty(item.product.id, item.quantity + 1)
                       }
@@ -105,7 +105,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => removeItem(item.product.id)}
-                      className="mt-1 text-slate-400 transition hover:text-red-600"
+                      className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                       aria-label="Remove item"
                     >
                       <TrashIcon />

@@ -118,7 +118,7 @@ export default function ProductDetailPage() {
 
   return (
     <div>
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 lg:grid-cols-2">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:gap-10 sm:py-10 lg:grid-cols-2">
         <div ref={galleryRef}>
           <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm">
             <div className="aspect-square overflow-hidden bg-slate-100">
@@ -142,13 +142,13 @@ export default function ProductDetailPage() {
             )}
           </div>
           {images.length > 1 && (
-            <div className="mt-3 flex gap-2">
+            <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {images.map((src, i) => (
                 <button
                   key={src + i}
                   type="button"
                   onClick={() => setActiveImg(i)}
-                  className={`h-16 w-16 overflow-hidden rounded-xl border-2 ${
+                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 ${
                     i === activeImg ? "border-[#0F4C5C]" : "border-transparent"
                   }`}
                 >
@@ -167,11 +167,11 @@ export default function ProductDetailPage() {
             {product.brand.name}
           </span>
           <p className="mt-3 text-sm text-slate-400">{product.category?.name}</p>
-          <h1 className="brand-font mt-1 text-3xl font-bold text-slate-900 sm:text-4xl">
+          <h1 className="brand-font mt-1 text-2xl font-bold text-slate-900 sm:text-3xl lg:text-4xl">
             {product.name}
           </h1>
           <p className="mt-2 text-sm text-slate-400">SKU: {product.sku}</p>
-          <p className="pd-price mt-4 text-3xl font-semibold text-[#0F4C5C]">
+          <p className="pd-price mt-4 text-2xl font-semibold text-[#0F4C5C] sm:text-3xl">
             {formatPrice(product.price)}
           </p>
           {product.compare_at_price && (
@@ -198,20 +198,22 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          <div className="pd-actions mt-8 flex flex-wrap items-center gap-3">
-            <div className="flex items-center rounded-xl border border-slate-200 bg-white">
+          <div className="pd-actions mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex h-12 items-center self-start rounded-xl border border-slate-200 bg-white">
               <button
                 type="button"
-                className="px-3 py-2 text-lg"
+                className="flex h-12 w-12 items-center justify-center text-lg"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
+                aria-label="Decrease quantity"
               >
                 −
               </button>
               <span className="min-w-10 text-center font-medium">{qty}</span>
               <button
                 type="button"
-                className="px-3 py-2 text-lg"
+                className="flex h-12 w-12 items-center justify-center text-lg"
                 onClick={() => setQty((q) => q + 1)}
+                aria-label="Increase quantity"
               >
                 +
               </button>
@@ -219,7 +221,7 @@ export default function ProductDetailPage() {
             <button
               ref={addBtnRef}
               type="button"
-              className="btn-primary rounded-xl bg-[#0F4C5C] px-6 py-3 text-sm font-semibold text-white"
+              className="btn-primary min-h-12 w-full rounded-xl bg-[#0F4C5C] px-6 py-3 text-sm font-semibold text-white sm:w-auto"
               onClick={onAddToCart}
             >
               {added ? "Added!" : "Add to cart"}

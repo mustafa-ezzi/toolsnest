@@ -10,11 +10,13 @@ export default function AnnouncementBar() {
         backgroundSize: "200% 100%",
       }}
     >
-      <div className="px-4 py-2">
-        <span className="mr-2 inline-block rounded-full bg-[var(--neo-amber)] px-2 py-0.5 text-[11px] font-bold text-[#1a2332]">
+      <div className="px-3 py-2.5 sm:px-4 sm:py-2">
+        <span className="mr-2 inline-block rounded-full bg-[var(--neo-amber)] px-2 py-0.5 text-[10px] font-bold text-[#1a2332] sm:text-[11px]">
           NEW
         </span>
-        Free shipping on all orders over Rs 15,000
+        <span className="inline max-sm:text-[12px]">
+          Free shipping on orders over Rs 15,000
+        </span>
       </div>
     </div>
   );

@@ -66,9 +66,9 @@ export default function ProductCard({ product, index = 0 }: Props) {
         >
           {product.name}
         </Link>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <div>
-            <p className="text-lg font-semibold text-[var(--neo-accent)]">
+        <div className="mt-auto flex items-center justify-between gap-3 pt-3">
+          <div className="min-w-0">
+            <p className="truncate text-base font-semibold text-[var(--neo-accent)] sm:text-lg">
               {formatPrice(product.price)}
             </p>
             {product.compare_at_price && (
@@ -80,7 +80,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
           <button
             type="button"
             onClick={() => addItem(product)}
-            className="neo-btn-fill rounded-full px-4 py-2 text-xs font-semibold"
+            className="neo-btn-fill shrink-0 rounded-full px-4 py-2.5 text-xs font-semibold min-h-11 min-w-[4.5rem]"
           >
             Add
           </button>
