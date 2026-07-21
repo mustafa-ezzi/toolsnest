@@ -9,6 +9,7 @@ import { useCart } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
 import { getProductBadges } from "../utils/badges";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import { ProductDetailSkeleton } from "../components/Skeleton";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -80,7 +81,7 @@ export default function ProductDetailPage() {
   }, [related, reduceMotion]);
 
   if (loading) {
-    return <div className="py-24 text-center text-slate-500">Loading product…</div>;
+    return <ProductDetailSkeleton />;
   }
 
   if (error || !product) {

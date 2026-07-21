@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { animate } from "animejs";
+import { createTimeline } from "animejs/timeline";
 
 export function StockBadge({ qty }: { qty: number }) {
   let cls = "bg-emerald-500/20 text-emerald-400";
@@ -108,7 +110,83 @@ export function Modal({
   footer?: ReactNode;
   size?: keyof typeof sizeClass;
 }) {
-  if (!open) return null;
+  const [mounted, setMounted] = useState(open);
+  const backdropRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const closingRef = useRef(false);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (open) {
+      closingRef.current = false;
+      setMounted(true);
+      return;
+    }
+
+    if (!mounted || closingRef.current) return;
+    closingRef.current = true;
+
+    const backdrop = backdropRef.current;
+    const panel = panelRef.current;
+    if (reduceMotion || !backdrop || !panel) {
+      setMounted(false);
+      closingRef.current = false;
+      return;
+    }
+
+    const tl = createTimeline({
+      defaults: { duration: 220, ease: "in(2)" },
+      onComplete: () => {
+        setMounted(false);
+        closingRef.current = false;
+      },
+    });
+    tl.add(panel, { opacity: [1, 0], translateY: [0, 18], scale: [1, 0.97] }).add(
+      backdrop,
+      { opacity: [1, 0] },
+      0,
+    );
+
+    return () => {
+      tl.pause();
+    };
+  }, [open, mounted]);
+
+  useEffect(() => {
+    if (!mounted || !open) return;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const backdrop = backdropRef.current;
+    const panel = panelRef.current;
+    if (reduceMotion || !backdrop || !panel) return;
+
+    const tl = createTimeline({ defaults: { duration: 320, ease: "out(3)" } });
+    tl.add(backdrop, { opacity: [0, 1] }).add(
+      panel,
+      { opacity: [0, 1], translateY: [28, 0], scale: [0.96, 1] },
+      "-=220",
+    );
+
+    return () => {
+      tl.pause();
+    };
+  }, [mounted, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  if (!mounted) return null;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
@@ -117,12 +195,14 @@ export function Modal({
       aria-labelledby="admin-modal-title"
     >
       <button
+        ref={backdropRef}
         type="button"
         aria-label="Close dialog"
         className="absolute inset-0 bg-[#0a0e14]/75 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
+        ref={panelRef}
         className={`relative flex max-h-[92vh] w-full ${sizeClass[size]} flex-col overflow-hidden rounded-t-3xl border border-white/10 bg-[#111827] shadow-[0_25px_80px_rgba(0,0,0,0.55)] sm:rounded-3xl`}
       >
         <div className="relative shrink-0 overflow-hidden border-b border-white/5 px-5 pb-4 pt-5 sm:px-6">
@@ -166,6 +246,33 @@ export function Modal({
       </div>
     </div>
   );
+}
+
+/** Flash a table row after create/update (Anime.js). */
+export function useRowFlash(flashId: number | null) {
+  useEffect(() => {
+    if (flashId == null) return;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const row = document.querySelector<HTMLElement>(
+      `[data-row-id="${flashId}"]`,
+    );
+    if (!row || reduceMotion) return;
+
+    const anim = animate(row, {
+      backgroundColor: [
+        "rgba(45, 212, 191, 0.28)",
+        "rgba(45, 212, 191, 0.08)",
+        "rgba(0, 0, 0, 0)",
+      ],
+      duration: 1200,
+      ease: "out(2)",
+    });
+    return () => {
+      anim.pause();
+    };
+  }, [flashId]);
 }
 
 export function Field({

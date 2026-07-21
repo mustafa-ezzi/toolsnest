@@ -12,6 +12,7 @@ import { stagger } from "animejs/utils";
 import { getBrands, getCategories, getProducts } from "../api/client";
 import type { Brand, Category, Product } from "../types";
 import ProductCard from "../components/ProductCard";
+import { ProductGridSkeleton } from "../components/Skeleton";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 
 const PAGE_SIZE = 24;
@@ -278,7 +279,7 @@ export default function ProductsPage() {
 
         <div>
           {loading ? (
-            <div className="py-20 text-center text-slate-500">Loading products…</div>
+            <ProductGridSkeleton count={6} />
           ) : products.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-20 text-center text-slate-500">
               No products match these filters.

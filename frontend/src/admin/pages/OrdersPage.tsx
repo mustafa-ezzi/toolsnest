@@ -20,6 +20,7 @@ import {
   ORDER_STATUSES,
   orderStatusLabel,
 } from "../../utils/orderStatus";
+import { AdminTableSkeleton } from "../../components/Skeleton";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -104,11 +105,7 @@ export default function AdminOrdersPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                    Loading…
-                  </td>
-                </tr>
+                <AdminTableSkeleton rows={6} cols={6} />
               ) : orders.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-slate-500">

@@ -19,6 +19,7 @@ import {
   adminBtnGhost,
   adminBtnPrimary,
   adminInputClass,
+  useRowFlash,
 } from "../components/AdminUI";
 
 type BrandForm = {
@@ -44,9 +45,11 @@ export default function AdminBrandsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Brand | null>(null);
   const [form, setForm] = useState<BrandForm>(empty);
+  const [flashId, setFlashId] = useState<number | null>(null);
+  useRowFlash(flashId);
 
   function load() {
-    adminGet<Paginated<Brand>>("/api/admin/brands/?page_size=100").then((d) =>
+    return adminGet<Paginated<Brand>>("/api/admin/brands/?page_size=100").then((d) =>
       setBrands(d.results)
     );
   }
@@ -75,13 +78,19 @@ export default function AdminBrandsPage() {
   }
 
   async function save() {
+    let savedId = editing?.id ?? null;
     if (editing) {
       await adminPut(`/api/admin/brands/${editing.id}/`, form);
     } else {
-      await adminPost("/api/admin/brands/", form);
+      const created = await adminPost<Brand>("/api/admin/brands/", form);
+      savedId = created.id;
     }
     setModalOpen(false);
-    load();
+    await load();
+    if (savedId != null) {
+      setFlashId(savedId);
+      window.setTimeout(() => setFlashId(null), 1600);
+    }
   }
 
   async function remove(id: number) {
@@ -115,7 +124,7 @@ export default function AdminBrandsPage() {
           </thead>
           <tbody>
             {brands.map((b) => (
-              <tr key={b.id} className="border-b border-white/5">
+              <tr key={b.id} data-row-id={b.id} className="border-b border-white/5">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     {b.logo_url && (

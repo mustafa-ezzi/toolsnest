@@ -24,7 +24,9 @@ import {
   adminBtnGhost,
   adminBtnPrimary,
   adminInputClass,
+  useRowFlash,
 } from "../components/AdminUI";
+import { AdminTableSkeleton } from "../../components/Skeleton";
 
 type ProductForm = {
   name: string;
@@ -67,9 +69,11 @@ export default function AdminProductsPage() {
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [flashId, setFlashId] = useState<number | null>(null);
   const sentinelRef = useRef<HTMLTableRowElement | null>(null);
   const loadingMoreRef = useRef(false);
   const pageSize = 40;
+  useRowFlash(flashId);
 
   function loadBrandsAndCategories() {
     return Promise.all([
@@ -89,7 +93,7 @@ export default function AdminProductsPage() {
     loadingMoreRef.current = false;
     const q = new URLSearchParams({ page: "1", page_size: String(pageSize) });
     if (search) q.set("search", search);
-    Promise.all([
+    return Promise.all([
       adminGet<Paginated<Product>>(`/api/admin/products/?${q}`),
       loadBrandsAndCategories(),
     ])
@@ -192,13 +196,19 @@ export default function AdminProductsPage() {
           ? [{ url: form.image_url, alt: form.name, sort_order: 0 }]
           : [],
       };
+      let savedId = editing?.id ?? null;
       if (editing) {
         await adminPut(`/api/admin/products/${editing.id}/`, payload);
       } else {
-        await adminPost("/api/admin/products/", payload);
+        const created = await adminPost<Product>("/api/admin/products/", payload);
+        savedId = created.id;
       }
       setModalOpen(false);
-      loadFirstPage();
+      await loadFirstPage();
+      if (savedId != null) {
+        setFlashId(savedId);
+        window.setTimeout(() => setFlashId(null), 1600);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Save failed");
     } finally {
@@ -280,11 +290,7 @@ export default function AdminProductsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
-                  Loading…
-                </td>
-              </tr>
+              <AdminTableSkeleton rows={8} cols={7} />
             ) : products.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
@@ -294,7 +300,11 @@ export default function AdminProductsPage() {
             ) : (
               <>
                 {products.map((p) => (
-                  <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                  <tr
+                    key={p.id}
+                    data-row-id={p.id}
+                    className="border-b border-white/5 hover:bg-white/[0.02]"
+                  >
                     <td className="px-4 py-3">
                       <img
                         src={p.primary_image || "https://placehold.co/48"}

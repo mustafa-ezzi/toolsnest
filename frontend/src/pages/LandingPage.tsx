@@ -6,6 +6,7 @@ import BrandMarquee from "../components/BrandMarquee";
 import CategoryGrid from "../components/CategoryGrid";
 import BrandProductSection from "../components/BrandProductSection";
 import AboutSupportBand from "../components/AboutSupportBand";
+import { LandingSkeleton } from "../components/Skeleton";
 
 const BRAND_TAGLINES: Record<string, string> = {
   total: "Professional Tools for Every Job",
@@ -74,11 +75,7 @@ export default function LandingPage() {
   }, [products]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center text-[var(--neo-muted)]">
-        <div className="neo-raised rounded-3xl px-8 py-6">Loading ToolsNest...</div>
-      </div>
-    );
+    return <LandingSkeleton />;
   }
 
   if (error) {

@@ -515,6 +515,38 @@ h4,
   }
 }
 
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.22) 0%,
+    rgba(226, 232, 240, 0.55) 45%,
+    rgba(148, 163, 184, 0.22) 90%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.25s ease-in-out infinite;
+}
+
+/* Dark admin tables */
+.admin-shell .skeleton,
+[data-admin] .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0.04) 90%
+  );
+  background-size: 200% 100%;
+}
+
 .animate-fade-up {
   animation: fadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -575,8 +607,13 @@ h4,
   .product-card,
   .product-card__image,
   .spatial-orb,
-  .liquid-glass::before {
+  .liquid-glass::before,
+  .skeleton {
     animation: none !important;
     transition: none !important;
+  }
+
+  .skeleton {
+    background: rgba(148, 163, 184, 0.28);
   }
 }

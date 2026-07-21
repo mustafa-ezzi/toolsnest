@@ -296,10 +296,22 @@ For ToolsNest’s current scope (e-commerce + admin), **Anime.js is a good fit**
 2. Scroll-in for `BrandProductSection` + `CategoryGrid` via `useScrollReveal` + `onScroll`
 3. Product detail entrance sequence + Add-to-cart pulse + related-product stagger
 
-### Phase C — Admin (optional)
+### Phase C — Admin ✅ (implemented)
 
-1. Modal open/close timeline
-2. Table row highlight on save
+1. Modal open/close timeline (`AdminUI` Modal — backdrop + panel Anime.js enter/exit)
+2. Table row highlight on save (`useRowFlash` on Products + Brands)
+3. Skeleton loading — storefront (landing, products grid, product detail) + admin tables
+
+### Skeleton loading
+
+Shared components in `frontend/src/components/Skeleton.tsx`:
+
+| Component | Used on |
+|---|---|
+| `LandingSkeleton` | Home while catalog loads |
+| `ProductGridSkeleton` | `/products` first page |
+| `ProductDetailSkeleton` | Product detail |
+| `AdminTableSkeleton` | Admin products / orders tables |
 
 ---
 
