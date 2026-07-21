@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { createTimeline } from "animejs/timeline";
 import type { Banner } from "../types";
+import { useReducedMotion } from "../hooks/useReducedMotion";
 
 type Props = { banners: Banner[] };
 
@@ -23,6 +25,8 @@ export default function HeroCarousel({ banners }: Props) {
         ];
 
   const [index, setIndex] = useState(0);
+  const captionRef = useRef<HTMLDivElement | null>(null);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (slides.length <= 1) return;
@@ -33,6 +37,22 @@ export default function HeroCarousel({ banners }: Props) {
   }, [slides.length]);
 
   const slide = slides[index];
+
+  useEffect(() => {
+    const panel = captionRef.current;
+    if (!panel || reduceMotion) return;
+    const timeline = createTimeline({
+      defaults: { duration: 500, ease: "out(3)" },
+    });
+    timeline
+      .add(panel, { opacity: [0, 1], translateY: [22, 0] })
+      .add(".hero-title", { opacity: [0, 1], translateY: [14, 0] }, "-=260")
+      .add(".hero-subtitle", { opacity: [0, 1], translateY: [10, 0] }, "-=280")
+      .add(".hero-cta", { opacity: [0, 1], scale: [0.96, 1] }, "-=280");
+    return () => {
+      timeline.pause();
+    };
+  }, [index, reduceMotion]);
 
   function prev() {
     setIndex((i) => (i - 1 + slides.length) % slides.length);
@@ -66,6 +86,7 @@ export default function HeroCarousel({ banners }: Props) {
         <div className="relative z-10 flex h-full max-w-xl flex-col justify-center p-6 sm:p-10 lg:p-14">
           <div
             key={slide.id}
+            ref={captionRef}
             className="animate-fade-up rounded-3xl border border-white/40 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:p-8"
             style={{
               background:
@@ -75,15 +96,15 @@ export default function HeroCarousel({ banners }: Props) {
             <span className="mb-3 inline-flex rounded-full bg-[var(--neo-amber)] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#1a2332]">
               ToolsNest Store
             </span>
-            <h1 className="brand-font text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+            <h1 className="hero-title brand-font text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
               {slide.title}
             </h1>
             {slide.subtitle && (
-              <p className="mt-3 max-w-md text-sm text-white/85 sm:text-base">
+              <p className="hero-subtitle mt-3 max-w-md text-sm text-white/85 sm:text-base">
                 {slide.subtitle}
               </p>
             )}
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="hero-cta mt-7 flex flex-wrap gap-3">
               {slide.cta_label && (
                 <Link
                   to={slide.cta_url || "/products"}

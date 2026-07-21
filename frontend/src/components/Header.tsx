@@ -1,16 +1,32 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { animate } from "animejs";
 import { BrandLogo } from "./AnnouncementBar";
 import { useCart } from "../context/CartContext";
+import { useReducedMotion } from "../hooks/useReducedMotion";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `liquid-nav-link ${isActive ? "is-active" : ""}`;
 
 export default function Header() {
   const { count } = useCart();
+  const reduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const badgeRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    if (reduceMotion || count < 1 || !badgeRef.current) return;
+    const anim = animate(badgeRef.current, {
+      scale: [1, 1.22, 1],
+      duration: 380,
+      ease: "out(3)",
+    });
+    return () => {
+      anim.pause();
+    };
+  }, [count, reduceMotion]);
 
   function onSearch(e: FormEvent) {
     e.preventDefault();
@@ -68,7 +84,10 @@ export default function Header() {
             >
               <CartIcon />
               {count > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--neo-accent)] px-1 text-[11px] font-semibold text-white shadow-md">
+                <span
+                  ref={badgeRef}
+                  className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--neo-accent)] px-1 text-[11px] font-semibold text-white shadow-md"
+                >
                   {count}
                 </span>
               )}

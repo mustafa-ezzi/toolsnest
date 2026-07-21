@@ -7,9 +7,12 @@ import {
   type FormEvent,
 } from "react";
 import { useSearchParams } from "react-router-dom";
+import { animate } from "animejs";
+import { stagger } from "animejs/utils";
 import { getBrands, getCategories, getProducts } from "../api/client";
 import type { Brand, Category, Product } from "../types";
 import ProductCard from "../components/ProductCard";
+import { useReducedMotion } from "../hooks/useReducedMotion";
 
 const PAGE_SIZE = 24;
 
@@ -30,7 +33,10 @@ export default function ProductsPage() {
   const [localQ, setLocalQ] = useState(q);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const previousLengthRef = useRef(0);
   const loadingMoreRef = useRef(false);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     getBrands().then(setBrands).catch(() => setBrands([]));
@@ -124,6 +130,30 @@ export default function ProductsPage() {
     observer.observe(node);
     return () => observer.disconnect();
   }, [hasMore, loadMore, products.length]);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid || reduceMotion || products.length === 0 || loading) {
+      previousLengthRef.current = products.length;
+      return;
+    }
+    const cards = Array.from(grid.querySelectorAll(".product-card"));
+    const previousLength = previousLengthRef.current;
+    const newCards = cards.slice(previousLength);
+    previousLengthRef.current = products.length;
+    if (newCards.length === 0) return;
+
+    const anim = animate(newCards, {
+      opacity: [0, 1],
+      translateY: [18, 0],
+      duration: 420,
+      ease: "out(3)",
+      delay: stagger(55),
+    });
+    return () => {
+      anim.pause();
+    };
+  }, [products, loading, reduceMotion]);
 
   const title = useMemo(() => {
     if (brand) {
@@ -255,7 +285,10 @@ export default function ProductsPage() {
             </div>
           ) : (
             <>
-              <div className="stagger grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div
+                ref={gridRef}
+                className="stagger grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+              >
                 {products.map((p, i) => (
                   <ProductCard key={p.id} product={p} index={i} />
                 ))}
