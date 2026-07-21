@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import type { Brand, Category, Product } from "../../types";
 import {
   adminDelete,
@@ -253,6 +254,9 @@ export default function AdminProductsPage() {
         subtitle="Manage inventory, pricing, and details."
         action={
           <div className="flex gap-2">
+            <Link to="/admin/import" className={adminBtnGhost}>
+              Import Excel
+            </Link>
             <button
               type="button"
               onClick={() =>

@@ -21,6 +21,7 @@ import AdminBannersPage from "./admin/pages/BannersPage";
 import AdminReportsPage from "./admin/pages/ReportsPage";
 import OrderLookupPage from "./pages/OrderLookupPage";
 import AdminCouponsPage from "./admin/pages/CouponsPage";
+import AdminImportExcelPage from "./admin/pages/ImportExcelPage";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path="products" element={<AdminProductsPage />} />
+            <Route path="import" element={<AdminImportExcelPage />} />
             <Route path="orders" element={<AdminOrdersPage />} />
             <Route path="brands" element={<AdminBrandsPage />} />
             <Route path="categories" element={<AdminCategoriesPage />} />

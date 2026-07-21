@@ -123,6 +123,65 @@ export async function adminUpload(file: File, folder = "products") {
   return data as { url: string; storage?: string; key?: string };
 }
 
+export type ExcelImportResult = {
+  created: number;
+  updated: number;
+  skipped: number;
+  images_uploaded: number;
+  images_skipped: number;
+  images_failed: number;
+  images_missing: number;
+  storage: string;
+  errors: string[];
+  warnings: string[];
+  error_count?: number;
+  warning_count?: number;
+};
+
+export async function adminImportExcel(opts: {
+  file: File;
+  images?: File | null;
+  defaultBrand?: string;
+  defaultCategory?: string;
+  defaultStock?: number;
+  sheet?: string;
+  imagesSheet?: string;
+  limit?: number;
+  skipImages?: boolean;
+  updateImages?: boolean;
+  dryRun?: boolean;
+}): Promise<ExcelImportResult> {
+  const token = getToken();
+  const form = new FormData();
+  form.append("file", opts.file);
+  if (opts.images) form.append("images", opts.images);
+  if (opts.defaultBrand) form.append("default_brand", opts.defaultBrand);
+  if (opts.defaultCategory !== undefined)
+    form.append("default_category", opts.defaultCategory);
+  if (opts.defaultStock != null)
+    form.append("default_stock", String(opts.defaultStock));
+  if (opts.sheet) form.append("sheet", opts.sheet);
+  if (opts.imagesSheet) form.append("images_sheet", opts.imagesSheet);
+  if (opts.limit != null && opts.limit > 0)
+    form.append("limit", String(opts.limit));
+  if (opts.skipImages) form.append("skip_images", "true");
+  if (opts.updateImages) form.append("update_images", "true");
+  if (opts.dryRun) form.append("dry_run", "true");
+
+  const res = await fetch(`${API_BASE}/api/admin/products/import-excel/`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  const data = (await res.json().catch(() => ({}))) as ExcelImportResult & {
+    detail?: string;
+  };
+  if (!res.ok) {
+    throw new Error(data.detail || "Excel import failed");
+  }
+  return data;
+}
+
 /** Download CSV with JWT auth */
 export async function adminDownloadCsv(path: string, filename: string) {
   const token = getToken();

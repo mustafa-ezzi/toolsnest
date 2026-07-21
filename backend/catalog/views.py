@@ -1,8 +1,10 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, permissions, viewsets
+from rest_framework import filters, generics, permissions, status, viewsets
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .excel_import import import_products
 from .filters import ProductFilter
 from .models import Banner, Brand, Category, Product
 from .serializers import (
@@ -142,3 +144,120 @@ class AdminProductViewSet(viewsets.ModelViewSet):
         if self.action in ("retrieve", "create", "update", "partial_update"):
             return ProductDetailSerializer
         return ProductListSerializer
+
+
+class AdminExcelProductImportView(APIView):
+    """Multipart Excel import: data workbook + optional images workbook → R2."""
+
+    permission_classes = [IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]
+
+    # Soft caps so browser uploads stay manageable; full catalog → CLI.
+    MAX_DATA_BYTES = 25 * 1024 * 1024
+    MAX_IMAGES_BYTES = 80 * 1024 * 1024
+
+    def post(self, request):
+        data_file = request.FILES.get("file") or request.FILES.get("data")
+        if not data_file:
+            return Response(
+                {"detail": "Upload a data Excel file as 'file'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        name = (data_file.name or "").lower()
+        if not name.endswith((".xlsx", ".xlsm", ".xls", ".csv")):
+            return Response(
+                {"detail": "Data file must be .xlsx, .xlsm, or .csv."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if data_file.size and data_file.size > self.MAX_DATA_BYTES:
+            return Response(
+                {
+                    "detail": (
+                        f"Data file too large ({data_file.size // (1024 * 1024)} MB). "
+                        "Use the CLI importer for full catalogs."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        images_file = request.FILES.get("images") or request.FILES.get("images_file")
+        if images_file:
+            iname = (images_file.name or "").lower()
+            if not iname.endswith((".xlsx", ".xlsm", ".xls")):
+                return Response(
+                    {"detail": "Images file must be .xlsx or .xlsm."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if images_file.size and images_file.size > self.MAX_IMAGES_BYTES:
+                return Response(
+                    {
+                        "detail": (
+                            f"Images file too large ({images_file.size // (1024 * 1024)} MB). "
+                            "Use the CLI importer for full catalogs with embedded pictures."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        def flag(key: str, default: bool = False) -> bool:
+            raw = request.data.get(key)
+            if raw is None or raw == "":
+                return default
+            return str(raw).strip().lower() in ("1", "true", "yes", "on")
+
+        def opt_int(key: str) -> int | None:
+            raw = request.data.get(key)
+            if raw is None or raw == "":
+                return None
+            try:
+                n = int(raw)
+                return n if n > 0 else None
+            except (TypeError, ValueError):
+                return None
+
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory(prefix="excel_import_") as tmp:
+            tmp_path = Path(tmp)
+            data_path = tmp_path / (data_file.name or "data.xlsx")
+            with open(data_path, "wb") as out:
+                for chunk in data_file.chunks():
+                    out.write(chunk)
+
+            images_path = None
+            if images_file:
+                images_path = tmp_path / (images_file.name or "images.xlsm")
+                with open(images_path, "wb") as out:
+                    for chunk in images_file.chunks():
+                        out.write(chunk)
+
+            try:
+                result = import_products(
+                    data_path=data_path,
+                    images_path=images_path,
+                    data_sheet=(request.data.get("sheet") or "").strip() or None,
+                    images_sheet=(request.data.get("images_sheet") or "").strip()
+                    or None,
+                    default_brand=(request.data.get("default_brand") or "Total").strip()
+                    or "Total",
+                    default_category=(request.data.get("default_category") or "").strip(),
+                    default_stock=opt_int("default_stock") or 10,
+                    limit=opt_int("limit"),
+                    skip_images=flag("skip_images"),
+                    update_images=flag("update_images"),
+                    dry_run=flag("dry_run"),
+                )
+            except ValueError as exc:
+                return Response(
+                    {"detail": str(exc)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            except Exception as exc:
+                return Response(
+                    {"detail": f"Import failed: {exc}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+        return Response(result.as_dict(), status=status.HTTP_200_OK)

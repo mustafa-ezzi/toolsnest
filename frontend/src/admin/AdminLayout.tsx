@@ -5,6 +5,7 @@ import { useAdminAuth } from "./AuthContext";
 const nav = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
   { to: "/admin/products", label: "Products", icon: "▣" },
+  { to: "/admin/import", label: "Import Excel", icon: "⬆" },
   { to: "/admin/orders", label: "Orders", icon: "🛒" },
   { to: "/admin/brands", label: "Brands", icon: "◆" },
   { to: "/admin/categories", label: "Categories", icon: "☰" },

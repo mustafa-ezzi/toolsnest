@@ -123,6 +123,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Allow larger Excel uploads (admin import); full ~100MB+ catalogs should use CLI.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 200
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ---------- CORS / CSRF (SPA frontend on another Railway domain) ----------

@@ -27,5 +27,10 @@ urlpatterns = [
         views.RelatedProductsView.as_view(),
         name="product-related",
     ),
+    path(
+        "admin/products/import-excel/",
+        views.AdminExcelProductImportView.as_view(),
+        name="admin-products-import-excel",
+    ),
     path("admin/", include(admin_router.urls)),
 ]
